@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Personal Assistant</title>
+    <link rel="stylesheet" href="{{url_for('static', filename='style.css')}}">
+</head>
+<body>
+    <h1 class="main-heading">AI Personal Assistant</h1>
+
+    <div class='container'>
+        <h2>Ask Anything</h2>
+        <form id="AskForm">
+            <input  type='text' name='question' placeholder="Ask Your Question ..." required>
+            <button type="submit">Ask</button>
+        </form>
+
+        <p id="ans-loading" style="display: none;">Processing ...</p>
+        <p id="answer"></p>
+
+        <hr>
+
+        <h2>Summarize Email</h2>
+        <form id="EmailForm">
+            <textarea  type='text' name='email' placeholder="Paste your email here ..." required></textarea>
+            <button type="submit">Summarize</button>
+        </form>
+
+        <p id="summary-loading" style="display: none;">Processing ...</p>
+        <p id="summary"></p>
+    </div>
+
+<script>
+    async function submitForm(e, endpoint, resultId, loadingId, responseKey) {
+        e.preventDefault();
+        const form = e.currentTarget;
+        const loading = document.getElementById(loadingId);
+        const result = document.getElementById(resultId);
+        loading.style.display = 'block';
+        result.innerText = '';
+
+        try {
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                body: new FormData(form)
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.error || 'The request could not be completed.');
+            }
+            result.innerText = data[responseKey] || '';
+        } catch (error) {
+            result.innerText = error.message || 'The request could not be completed. Please try again.';
+        } finally {
+            loading.style.display = 'none';
+        }
+    }
+
+    document.getElementById('AskForm').addEventListener('submit', (e) =>
+        submitForm(e, '/ask', 'answer', 'ans-loading', 'response')
+    );
+    document.getElementById('EmailForm').addEventListener('submit', (e) =>
+        submitForm(e, '/summarize', 'summary', 'summary-loading', 'summary')
+    );
+</script>
+</body>
+</html>
